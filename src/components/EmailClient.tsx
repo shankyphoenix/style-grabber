@@ -71,6 +71,14 @@ const emails: Email[] = [
 const EmailClient = () => {
   const [selectedEmail, setSelectedEmail] = useState(emails[0]);
   const [selectedFolder, setSelectedFolder] = useState('INBOX');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Filter emails based on search term
+  const filteredEmails = emails.filter(email => 
+    email.sender.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    email.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    email.preview.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const folders = [
     { name: 'INBOX', count: 7, icon: '📧' },
@@ -139,6 +147,8 @@ const EmailClient = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
               placeholder="Search"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 bg-white border-gray-300"
             />
             <Edit className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -157,7 +167,7 @@ const EmailClient = () => {
 
         {/* Email List */}
         <div className="flex-1 overflow-y-auto">
-          {emails.map((email) => (
+          {filteredEmails.map((email) => (
             <div
               key={email.id}
               onClick={() => setSelectedEmail(email)}
@@ -201,32 +211,38 @@ const EmailClient = () => {
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-semibold text-gray-900">Book Recommendations</h1>
+            <h1 className="text-xl font-semibold text-gray-900">{selectedEmail.subject}</h1>
             <div className="flex items-center space-x-2">
               <Badge className="bg-email-sidebar text-white px-3 py-1">
                 INBOX
               </Badge>
-              <Badge variant="outline" className="px-3 py-1">
-                Important
-              </Badge>
-              <Badge className="bg-primary text-primary-foreground px-3 py-1">
-                Personal
-              </Badge>
+              {selectedEmail.isUnread && (
+                <Badge variant="outline" className="px-3 py-1">
+                  Important
+                </Badge>
+              )}
+              {selectedEmail.category && (
+                <Badge className="bg-primary text-primary-foreground px-3 py-1">
+                  {selectedEmail.category}
+                </Badge>
+              )}
             </div>
           </div>
 
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                <span className="text-white font-medium">LG</span>
+                <span className="text-white font-medium">
+                  {selectedEmail.sender.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                </span>
               </div>
               <div>
-                <p className="font-medium text-gray-900">Lisa Greenberg</p>
+                <p className="font-medium text-gray-900">{selectedEmail.sender}</p>
                 <p className="text-sm text-gray-600">To: Mike Schmitz</p>
               </div>
             </div>
             <div className="flex items-center space-x-1 text-gray-600">
-              <span className="text-sm">Monday, Nov 19, 8:19 AM</span>
+              <span className="text-sm">Monday, Nov 19, {selectedEmail.time}</span>
               <button className="p-1 hover:bg-gray-100 rounded">
                 <MoreHorizontal className="w-4 h-4" />
               </button>
@@ -237,19 +253,34 @@ const EmailClient = () => {
         {/* Email Content */}
         <div className="flex-1 p-6 overflow-y-auto">
           <div className="prose max-w-none">
-            <p className="text-gray-800 leading-relaxed mb-4">
-              I'm a huge productivity nerd and was wondering if you have any book recommendations for 
-              someone who wants to work on creating better habits. Any suggestions?
-            </p>
-            <p className="text-gray-800 leading-relaxed mb-4">
-              Thanks in advance,
-            </p>
-            <p className="text-gray-800 leading-relaxed mb-4">
-              Lisa
-            </p>
-            <p className="text-gray-800 leading-relaxed">
-              P.S. I listen to Bookworm and love it!
-            </p>
+            {selectedEmail.id === 1 ? (
+              <>
+                <p className="text-gray-800 leading-relaxed mb-4">
+                  I'm a huge productivity nerd and was wondering if you have any book recommendations for 
+                  someone who wants to work on creating better habits. Any suggestions?
+                </p>
+                <p className="text-gray-800 leading-relaxed mb-4">
+                  Thanks in advance,
+                </p>
+                <p className="text-gray-800 leading-relaxed mb-4">
+                  Lisa
+                </p>
+                <p className="text-gray-800 leading-relaxed">
+                  P.S. I listen to Bookworm and love it!
+                </p>
+              </>
+            ) : (
+              <div className="text-gray-800 leading-relaxed">
+                <p className="mb-4">{selectedEmail.preview}</p>
+                <p className="mb-4">
+                  This is the full content of the email from {selectedEmail.sender}.
+                </p>
+                <p className="text-gray-600">
+                  Best regards,<br />
+                  {selectedEmail.sender}
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
