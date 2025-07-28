@@ -61,6 +61,15 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				email: {
+					sidebar: 'hsl(var(--email-sidebar))',
+					'sidebar-foreground': 'hsl(var(--email-sidebar-foreground))',
+					'sidebar-hover': 'hsl(var(--email-sidebar-hover))',
+					'list-bg': 'hsl(var(--email-list-bg))',
+					'list-border': 'hsl(var(--email-list-border))',
+					selected: 'hsl(var(--email-selected))',
+					'unread-indicator': 'hsl(var(--email-unread-indicator))'
 				}
 			},
 			borderRadius: {
