@@ -21,7 +21,7 @@ const EmailList = () => {
 
     const [emails, setEmails] = useState<Email[]>([]);
     const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
-    
+    const [detailLoading, setDetailLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
 
@@ -29,63 +29,74 @@ const EmailList = () => {
     useEffect(() => {
         setLoading(true);
         setTimeout(() => {
-        const fetchedEmails = [
-            {
-            id: 1,
-            sender: "Lisa Greenberg",
-            subject: "Book Recommendations",
-            preview: "I'm a huge productivity nerd and was...",
-            time: "8:19 AM",
-            isUnread: true,
-            category: "Personal"
-            },
-            {
-            id: 2,
-            sender: "John Smith",
-            subject: "Welcome Back",
-            preview: "Hey Mike, Good to see you are back",
-            time: "8:16 AM",
-            isUnread: true
-            },
-            {
-            id: 3,
-            sender: "Spark",
-            subject: "New email account login in Spark",
-            preview: "Your email address -",
-            time: "8:07 AM",
-            isUnread: true
-            },
-            {
-            id: 4,
-            sender: "SaneBox",
-            subject: "What's new with your SaneBox acco...",
-            preview: "Goto my Dashboard Hi Mike! Share",
-            time: "Nov 16",
-            isUnread: false
-            },
-            {
-            id: 5,
-            sender: "SaneBox",
-            subject: "What's new with your SaneBox acco...",
-            preview: "Goto my Dashboard Hi Mike! Share",
-            time: "Nov 9",
-            isUnread: false
-            },
-            {
-            id: 6,
-            sender: "SaneBox Digest",
-            subject: "(Sane Digest) 11 recent messages f...",
-            preview: "Email address:",
-            time: "Yesterday",
-            isUnread: false,
-            category: "Newsletters"
-            }
-        ];
-        setEmails(fetchedEmails);
-        setSelectedEmail(fetchedEmails[0]);
-        setLoading(false);
+            const fetchedEmails = [
+                {
+                id: 1,
+                sender: "Lisa Greenberg",
+                subject: "Book Recommendations",
+                preview: "I'm a huge productivity nerd and was...",
+                time: "8:19 AM",
+                isUnread: true,
+                category: "Personal"
+                },
+                {
+                id: 2,
+                sender: "John Smith",
+                subject: "Welcome Back",
+                preview: "Hey Mike, Good to see you are back",
+                time: "8:16 AM",
+                isUnread: true
+                },
+                {
+                id: 3,
+                sender: "Spark",
+                subject: "New email account login in Spark",
+                preview: "Your email address -",
+                time: "8:07 AM",
+                isUnread: true
+                },
+                {
+                id: 4,
+                sender: "SaneBox",
+                subject: "What's new with your SaneBox acco...",
+                preview: "Goto my Dashboard Hi Mike! Share",
+                time: "Nov 16",
+                isUnread: false
+                },
+                {
+                id: 5,
+                sender: "SaneBox",
+                subject: "What's new with your SaneBox acco...",
+                preview: "Goto my Dashboard Hi Mike! Share",
+                time: "Nov 9",
+                isUnread: false
+                },
+                {
+                id: 6,
+                sender: "SaneBox Digest",
+                subject: "(Sane Digest) 11 recent messages f...",
+                preview: "Email address:",
+                time: "Yesterday",
+                isUnread: false,
+                category: "Newsletters"
+                }
+            ];
+            setEmails(fetchedEmails);
+            setSelectedEmail(fetchedEmails[0]);
+            setLoading(false);
         }, 1200);
     }, []);
+
+    // Simulate AJAX call to fetch single email detail
+    const handleEmailClick = (emailId: number) => {
+        setDetailLoading(true);
+        setSelectedEmail(null);
+        setTimeout(() => {
+            const found = emails.find(e => e.id === emailId) || null;
+            setSelectedEmail(found);
+            setDetailLoading(false);
+        }, 800);
+    };
 
     // Filter emails based on search term
     const filteredEmails = emails.filter(email => 
@@ -132,7 +143,7 @@ const EmailList = () => {
                 filteredEmails.map((email) => (
                 <div
                     key={email.id}
-                    onClick={() => setSelectedEmail(email)}
+                    onClick={() => handleEmailClick(email.id)}
                     className={`p-4 border-b border-email-list-border cursor-pointer transition-colors ${
                     selectedEmail?.id === email.id ? 'bg-email-selected' : 'hover:bg-gray-50'
                     }`}
@@ -170,7 +181,13 @@ const EmailList = () => {
         </div>
         
         {/* Email Details */}
-        <EmailDetails selectedEmail={selectedEmail} />
+        {detailLoading ? (
+            <div className="flex-1 flex items-center justify-center text-gray-500 text-lg">
+                Loading email details...
+            </div>
+        ) : (
+            <EmailDetails selectedEmail={selectedEmail} />
+        )}
         </>
     )
 }
