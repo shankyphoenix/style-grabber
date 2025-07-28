@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Archive, Flag, MoreHorizontal, Reply, Forward, Star, MapPin, Bike, Clock } from 'lucide-react';
 
-const EmailDetails = ({selectedEmail}) => {
+// Accept tags prop from parent
+const EmailDetails = ({ selectedEmail, tags = [] }) => {
   return (
     <div className="flex-1 flex flex-col bg-white">
         {/* Header */}
@@ -62,6 +63,11 @@ const EmailDetails = ({selectedEmail}) => {
                     </button>
                   </span>
                   {/* Add more tags as needed */}
+                  {tags.map(tag => (
+                    <span key={tag} className="inline-flex items-center rounded-full bg-gray-200 px-3 py-1 text-sm text-gray-700">
+                      {tag}
+                    </span>
+                  ))}
                 </div>
               </div>
             </div>

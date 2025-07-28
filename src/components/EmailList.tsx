@@ -18,12 +18,15 @@ interface Email {
 }
 
 const EmailList = () => {
-
     const [emails, setEmails] = useState<Email[]>([]);
     const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
     const [detailLoading, setDetailLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
+    const [emailTags, setEmailTags] = useState<{ [emailId: number]: string[] }>({});
+    const [tagModalEmailId, setTagModalEmailId] = useState<number | null>(null);
+    const [customTag, setCustomTag] = useState('');
+    const [predefinedTags, setPredefinedTags] = useState<string[]>(["Work", "Personal", "Urgent", "Follow Up", "Newsletter"]);
 
     // Simulate AJAX call to fetch emails
     useEffect(() => {
@@ -104,7 +107,31 @@ const EmailList = () => {
         email.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
         email.preview.toLowerCase().includes(searchTerm.toLowerCase())
     );
-    
+
+    // Add tag to email
+    const addTagToEmail = (emailId: number, tag: string) => {
+        setEmailTags(prev => ({
+            ...prev,
+            [emailId]: prev[emailId] ? [...new Set([...prev[emailId], tag])] : [tag]
+        }));
+    };
+
+    // Add custom tag to predefined tags only
+    const addCustomTag = (tag: string) => {
+        if (tag && !predefinedTags.includes(tag)) {
+            setPredefinedTags(prev => [...prev, tag]);
+        }
+        setCustomTag('');
+    };
+
+    // Remove tag from email
+    const removeTagFromEmail = (emailId: number, tag: string) => {
+        setEmailTags(prev => ({
+            ...prev,
+            [emailId]: prev[emailId]?.filter(t => t !== tag) || []
+        }));
+    };
+
     return (
         <>
         <div className="w-96 bg-email-list-bg border-r border-email-list-border flex flex-col">
@@ -172,6 +199,32 @@ const EmailList = () => {
                             </Badge>
                         </div>
                         )}
+                        {/* Email tags */}
+                        <div className="flex flex-wrap gap-1 mt-2">
+                            {(emailTags[email.id] || []).map(tag => (
+                                <span key={tag} className="inline-flex items-center rounded-full bg-gray-200 px-2 py-0.5 text-xs text-gray-700">
+                                    {tag}
+                                    <button
+                                        className="ml-1 text-gray-400 hover:text-gray-700"
+                                        onClick={e => {
+                                            e.stopPropagation();
+                                            removeTagFromEmail(email.id, tag);
+                                        }}
+                                    >
+                                        &times;
+                                    </button>
+                                </span>
+                            ))}
+                            <button
+                                className="ml-2 px-2 py-0.5 text-xs rounded bg-primary text-white hover:bg-primary/80"
+                                onClick={e => {
+                                    e.stopPropagation();
+                                    setTagModalEmailId(email.id);
+                                }}
+                            >
+                                + Tag
+                            </button>
+                        </div>
                     </div>
                     </div>
                 </div>
@@ -179,14 +232,71 @@ const EmailList = () => {
             )}
             </div>
         </div>
-        
+
+        {/* Tag Modal/Popover */}
+        {tagModalEmailId !== null && (
+            <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+                <div className="bg-white rounded shadow-lg p-6 min-w-[320px]">
+                    <h3 className="text-lg font-semibold mb-2">Manage Tags</h3>
+                    <div className="mb-2">
+                        <div className="font-medium text-sm mb-1">Predefined Tags:</div>
+                        <div className="flex flex-wrap gap-2">
+                            {predefinedTags.map(tag => (
+                                <button
+                                    key={tag}
+                                    className={`px-2 py-1 rounded-full text-xs border ${
+                                        emailTags[tagModalEmailId]?.includes(tag)
+                                            ? "bg-primary text-white border-primary"
+                                            : "bg-gray-100 text-gray-700 border-gray-300"
+                                    }`}
+                                    onClick={() => addTagToEmail(tagModalEmailId, tag)}
+                                >
+                                    {tag}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="mb-2">
+                        <div className="font-medium text-sm mb-1">Add Custom Tag:</div>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                className="border rounded px-2 py-1 text-sm flex-1"
+                                value={customTag}
+                                onChange={e => setCustomTag(e.target.value)}
+                                placeholder="Enter tag"
+                            />
+                            <button
+                                className="px-2 py-1 bg-primary text-white rounded text-xs"
+                                disabled={!customTag.trim()}
+                                onClick={() => addCustomTag(customTag.trim())}
+                            >
+                                Add
+                            </button>
+                        </div>
+                    </div>
+                    <div className="flex justify-end mt-4">
+                        <button
+                            className="px-3 py-1 rounded bg-gray-200 text-gray-700 hover:bg-gray-300"
+                            onClick={() => {
+                                setTagModalEmailId(null);
+                                setCustomTag('');
+                            }}
+                        >
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )}
+
         {/* Email Details */}
         {detailLoading ? (
             <div className="flex-1 flex items-center justify-center text-gray-500 text-lg">
                 Loading email details...
             </div>
         ) : (
-            <EmailDetails selectedEmail={selectedEmail} />
+            <EmailDetails selectedEmail={selectedEmail} tags={selectedEmail ? emailTags[selectedEmail.id] || [] : []} />
         )}
         </>
     )
