@@ -22,14 +22,16 @@ const EmailClient = () => {
 
   // Example options for autosuggest
   const allOptions = [
-    'ABB - Motors & Drive Products',
-    'AMI Bearings, Inc.',
-    'Banner Engineering Corp.',
-    'Bosch Rexroth Corporation',
-    'Ericson Manufacturing Co.',
-    'Gates Corporation',
-    'IMI Norgren'
+    { id: 'abb', name: 'ABB - Motors & Drive Products' },
+    { id: 'ami', name: 'AMI Bearings, Inc.' },
+    { id: 'banner', name: 'Banner Engineering Corp.' },
+    { id: 'bosch', name: 'Bosch Rexroth Corporation' },
+    { id: 'ericson', name: 'Ericson Manufacturing Co.' },
+    { id: 'gates', name: 'Gates Corporation' },
+    { id: 'imi', name: 'IMI Norgren' }
   ];
+
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
 
   // Update suggestions as user types
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -38,13 +40,19 @@ const EmailClient = () => {
     if (val.trim() === '') {
       setSuggestions([]);
     } else {
-      setSuggestions(allOptions.filter(opt => opt.toLowerCase().includes(val.toLowerCase())));
+      setSuggestions(
+        allOptions
+          .filter(opt => opt.name.toLowerCase().includes(val.toLowerCase()))
+          .map(opt => opt.name)
+      );
     }
   };
 
   // Handle selecting a suggestion
   const handleSelectSuggestion = (option: string) => {
+    const selected = allOptions.find(opt => opt.name === option);
     setSelectedOption(option);
+    setSelectedCompanyId(selected ? selected.id : null);
     setSearchValue('');
     setSuggestions([]);
   };
@@ -59,7 +67,7 @@ const EmailClient = () => {
           <div className="w-full">
             <div className="relative w-full">
               <Input
-                placeholder="Search..."
+                placeholder="Search Company Here"
                 value={searchValue}
                 onChange={handleSearchChange}
                 className="pl-3 pr-8 py-2 text-sm rounded-lg bg-[#232232] border border-[#bdbdbd] text-white"
@@ -136,7 +144,10 @@ const EmailClient = () => {
       </div>
 
       {/* Email List */}
-      <EmailList />
+      <EmailList
+        selectedFolder={selectedFolder}
+        selectedCompanyId={selectedCompanyId}
+      />
 
     </div>
   );
