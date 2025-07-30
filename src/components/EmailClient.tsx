@@ -2,6 +2,7 @@ import React from 'react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import EmailList from './EmailList';
+import { fetchedEmails } from './EmailList';
 import { Inbox, Users, StickyNote } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
@@ -53,9 +54,15 @@ const EmailClient = () => {
     const selected = allOptions.find(opt => opt.name === option);
     setSelectedOption(option);
     setSelectedCompanyId(selected ? selected.id : null);
+    setSelectedFolder('Inbox'); // Automatically select Inbox
     setSearchValue('');
     setSuggestions([]);
   };
+
+  const selectedCompanyEmailCount =
+    selectedCompanyId && fetchedEmails[selectedCompanyId]
+      ? fetchedEmails[selectedCompanyId].length
+      : 0;
 
   return (
     <div className="h-screen flex bg-background">
@@ -98,7 +105,10 @@ const EmailClient = () => {
                   </span>
                   <button
                     className="ml-2 text-white hover:text-gray-200 focus:outline-none"
-                    onClick={() => setSelectedOption(null)}
+                    onClick={() => {
+                      setSelectedOption(null);
+                      setSelectedCompanyId(null); // Reset company selection for default view
+                    }}
                   >
                     &times;
                   </button>
@@ -124,7 +134,11 @@ const EmailClient = () => {
                   <span className="text-base">{folder.icon}</span>
                   <span>{folder.name}</span>
                 </div>
-                {folder && (
+                {folder.name === 'Inbox' ? (
+                  <Badge className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
+                    {selectedCompanyEmailCount}
+                  </Badge>
+                ) : (
                   <Badge className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
                     5
                   </Badge>

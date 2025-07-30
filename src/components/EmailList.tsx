@@ -18,7 +18,7 @@ interface Email {
   category?: string;
 }
 
-const fetchedEmails: Record<string, Array<{
+export const fetchedEmails: Record<string, Array<{
   id: string;
   subject: string;
   sender: string;
