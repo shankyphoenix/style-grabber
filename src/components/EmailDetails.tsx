@@ -39,7 +39,7 @@ const EmailDetails = ({ selectedEmail, tags = [] }) => {
               </div>
               <div>
                 <p className="font-medium text-gray-900">{selectedEmail?.sender}</p>
-                <p className="text-sm text-gray-600">To: Mike Schmitz</p>
+                <p className="text-sm text-gray-600">To: {selectedEmail?.to}</p>
                 {/* Tag-like options */}
                 <div className="flex space-x-2 mt-2">
                   {/* Portland tag */}
@@ -102,7 +102,10 @@ const EmailDetails = ({ selectedEmail, tags = [] }) => {
                 </>
               ) : (
                 <div className="text-gray-800 leading-relaxed">
-                  <p className="mb-4">{selectedEmail.preview}</p>
+                  <div
+                    className="mb-4"
+                    dangerouslySetInnerHTML={{ __html: selectedEmail.preview }}
+                  />
                   <p className="mb-4">
                     This is the full content of the email from {selectedEmail.sender}.
                   </p>
@@ -121,17 +124,17 @@ const EmailDetails = ({ selectedEmail, tags = [] }) => {
         {/* Action Buttons */}
         <div className="p-6 border-t border-gray-200">
           <div className="flex items-center space-x-3">
-            <Button variant="outline" className="flex items-center space-x-2">
+            {/* <Button variant="outline" className="flex items-center space-x-2">
               <Reply className="w-4 h-4" />
               <span>Reply</span>
             </Button>
             <Button variant="outline" className="flex items-center space-x-2">
               <Forward className="w-4 h-4" />
               <span>Forward</span>
-            </Button>
+            </Button> */}
             <Button className="flex items-center space-x-2">
               <Star className="w-4 h-4" />
-              <span>Quick Reply</span>
+              <span>Prcoess</span>
             </Button>
             {/* Added icons after Quick Reply */}
             <div className="flex items-center space-x-2 ml-4">

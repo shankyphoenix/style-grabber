@@ -1,8 +1,6 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import EmailList from './EmailList';
-import { fetchedEmails } from './EmailList';
 import { Inbox, Users, StickyNote } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
@@ -21,16 +19,32 @@ const EmailClient = () => {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
-  // Example options for autosuggest
-  const allOptions = [
-    { id: 'abb', name: 'ABB - Motors & Drive Products' },
-    { id: 'ami', name: 'AMI Bearings, Inc.' },
-    { id: 'banner', name: 'Banner Engineering Corp.' },
-    { id: 'bosch', name: 'Bosch Rexroth Corporation' },
-    { id: 'ericson', name: 'Ericson Manufacturing Co.' },
-    { id: 'gates', name: 'Gates Corporation' },
-    { id: 'imi', name: 'IMI Norgren' }
-  ];
+  // Fetch companies from API
+  const [allOptions, setAllOptions] = useState<{ company_id: string; company_name: string }[]>([]);
+  useEffect(() => {
+    // Use import.meta.env for Vite or process.env for Create React App
+    const apiKey =
+      typeof process !== "undefined" && process.env && process.env.REACT_APP_INTERLYNX_API_KEY
+        ? process.env.REACT_APP_INTERLYNX_API_KEY
+        : (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_INTERLYNX_API_KEY
+            ? import.meta.env.VITE_INTERLYNX_API_KEY
+            : 'AWS_API_KEY_12345');
+            
+
+    // Use fetch with credentials: 'same-origin' to ensure headers are sent
+    fetch('https://database.interlynxsystems.com/AWSFeatures/get_all_companies', {
+      method: 'GET',
+      headers: {
+        'x-api-key': apiKey || '',
+        'Accept': 'application/json'
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setAllOptions(data);
+      })
+      .catch(() => setAllOptions([]));
+  }, []);
 
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
 
@@ -51,18 +65,15 @@ const EmailClient = () => {
 
   // Handle selecting a suggestion
   const handleSelectSuggestion = (option: string) => {
+    console.log(allOptions);
     const selected = allOptions.find(opt => opt.name === option);
     setSelectedOption(option);
-    setSelectedCompanyId(selected ? selected.id : null);
+    setSelectedCompanyId(selected ? selected.company_id : null);
+    console.log(selected);
     setSelectedFolder('Inbox'); // Automatically select Inbox
     setSearchValue('');
     setSuggestions([]);
   };
-
-  const selectedCompanyEmailCount =
-    selectedCompanyId && fetchedEmails[selectedCompanyId]
-      ? fetchedEmails[selectedCompanyId].length
-      : 0;
 
   return (
     <div className="h-screen flex bg-background">
@@ -136,12 +147,10 @@ const EmailClient = () => {
                 </div>
                 {folder.name === 'Inbox' ? (
                   <Badge className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
-                    {selectedCompanyEmailCount}
+                    {0}
                   </Badge>
                 ) : (
-                  <Badge className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
-                    5
-                  </Badge>
+                  <></>
                 )}
               </button>
             ))}

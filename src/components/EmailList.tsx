@@ -18,37 +18,6 @@ interface Email {
   category?: string;
 }
 
-export const fetchedEmails: Record<string, Array<{
-  id: string;
-  subject: string;
-  sender: string;
-  body: string;
-  date: string;
-}>> = {
-  abb: [
-    { id: '1', subject: 'ABB Order Confirmation', sender: 'sales@abb.com', body: 'Your order is confirmed.', date: '2024-06-01' },
-    { id: '2', subject: 'ABB Invoice', sender: 'billing@abb.com', body: 'Please find attached invoice.', date: '2024-06-02' }
-  ],
-  ami: [
-    { id: '3', subject: 'AMI Bearings Update', sender: 'info@ami.com', body: 'Product update details.', date: '2024-06-03' }
-  ],
-  banner: [
-    { id: '4', subject: 'Banner Engineering Newsletter', sender: 'newsletter@banner.com', body: 'Latest news from Banner.', date: '2024-06-04' }
-  ],
-  bosch: [
-    { id: '5', subject: 'Bosch Rexroth Shipment', sender: 'shipping@bosch.com', body: 'Your shipment is on the way.', date: '2024-06-05' }
-  ],
-  ericson: [
-    { id: '6', subject: 'Ericson Manufacturing Quote', sender: 'quotes@ericson.com', body: 'Here is your requested quote.', date: '2024-06-06' }
-  ],
-  gates: [
-    { id: '7', subject: 'Gates Corporation Support', sender: 'support@gates.com', body: 'Support ticket update.', date: '2024-06-07' }
-  ],
-  imi: [
-    { id: '8', subject: 'IMI Norgren Product Launch', sender: 'marketing@imi.com', body: 'Check out our new products.', date: '2024-06-08' }
-  ]
-};
-
 interface EmailListProps {
   selectedFolder: string;
   selectedCompanyId: string | null;
@@ -65,35 +34,56 @@ const EmailList: React.FC<EmailListProps> = ({ selectedFolder, selectedCompanyId
   const [customTag, setCustomTag] = useState('');
   const [predefinedTags, setPredefinedTags] = useState<string[]>(["Work", "Personal", "Urgent", "Follow Up", "Newsletter"]);
 
-  // Simulate AJAX call to fetch emails
+  // Fetch emails for selected company
   useEffect(() => {
     setLoading(true);
-    setTimeout(() => {
-        let emailsToSet: any[] = [];
-        if (
-            selectedFolder === 'Inbox' &&
-            selectedCompanyId &&
-            fetchedEmails[selectedCompanyId]
-        ) {
-            emailsToSet = fetchedEmails[selectedCompanyId].map((email) => ({
-                id: Number(email.id),
-                sender: email.sender,
-                subject: email.subject,
-                preview: email.body,
-                time: email.date,
-                isUnread: true,
-                category: "Company"
-            }));
-            setSelectedEmail(emailsToSet[0] || null);
-        } else {
-            // Show default view (no emails) if no company is selected
-            emailsToSet = [];
-            setSelectedEmail(null);
+    setEmails([]);
+    setSelectedEmail(null);
+
+    if (selectedFolder === 'Inbox' && selectedCompanyId) {
+      // Replace with your actual endpoint
+
+      const apiKey =
+      typeof process !== "undefined" && process.env && process.env.REACT_APP_INTERLYNX_API_KEY
+        ? process.env.REACT_APP_INTERLYNX_API_KEY
+        : (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_INTERLYNX_API_KEY
+            ? import.meta.env.VITE_INTERLYNX_API_KEY
+            : 'AWS_API_KEY_12345');
+
+      fetch(`https://database.interlynxsystems.com/AWSFeatures/get_all_emails/${selectedCompanyId}`, {
+        method: 'GET',
+        headers: {
+            'x-api-key': apiKey || '',
+            'Accept': 'application/json'
         }
-        setEmails(emailsToSet);
-        setLoading(false);
-    }, 1200);
-}, [selectedCompanyId, selectedFolder]);
+        })
+        .then(res => res.json())
+        .then(data => {
+          // Expecting data to be an array of emails
+          const emailsToSet = (data || []).map((email: any) => ({
+            id: Number(email.id),
+            sender: email.sender,
+            subject: email.subject,
+            preview: email.body || email.preview || '',
+            time: email.date || '',
+            isUnread: true,
+            to: email.recipient,
+            category: "Company"
+          }));
+          console.log(emailsToSet)
+          setEmails(emailsToSet);
+          setSelectedEmail(emailsToSet[0] || null);
+          setLoading(false);
+        })
+        .catch(() => {
+          setEmails([]);
+          setSelectedEmail(null);
+          setLoading(false);
+        });
+    } else {
+      setLoading(false);
+    }
+  }, [selectedCompanyId, selectedFolder]);
 
   // Simulate AJAX call to fetch single email detail
   const handleEmailClick = (emailId: number) => {
