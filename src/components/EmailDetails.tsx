@@ -1,10 +1,47 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Archive, Flag, MoreHorizontal, Reply, Forward, Star, MapPin, Bike, Clock } from 'lucide-react';
 
 // Accept tags prop from parent
-const EmailDetails = ({ selectedEmail, tags = [] }) => {
+const EmailDetails = ({ selectedEmail, selectedCompanyUrl,  tags = [] }) => {
+  const [processing, setProcessing] = useState(false);
+  const [processError, setProcessError] = useState<string | null>(null);
+  const [processSuccess, setProcessSuccess] = useState(false);
+
+  const handleProcess = async () => {
+    if (!selectedCompanyUrl) {
+      setProcessError('No email URL found.');
+      return;
+    }
+    setProcessing(true);
+    setProcessError(null);
+    setProcessSuccess(false);
+    try {
+      // Generate mmddmmyymm format
+      const now = new Date();
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const yy = String(now.getFullYear()).slice(-2);
+      const m = String(now.getMonth() + 1);
+      const datePattern = `${mm}${dd}${m}${yy}${m}`; // mmddmmyymm
+
+      const response = await fetch('https://h26clhfesah2yyq5cwo4hotsfm0gfjcq.lambda-url.eu-north-1.on.aws/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: selectedCompanyUrl + "/outlook/email/" + datePattern + "/" + selectedEmail.id }),
+      });
+      if (!response.ok) {
+        throw new Error('API request failed');
+      }
+      setProcessSuccess(true);
+    } catch (err: any) {
+      setProcessError(err.message || 'Unknown error');
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col bg-white">
         {/* Header */}
@@ -124,17 +161,15 @@ const EmailDetails = ({ selectedEmail, tags = [] }) => {
         {/* Action Buttons */}
         <div className="p-6 border-t border-gray-200">
           <div className="flex items-center space-x-3">
-            {/* <Button variant="outline" className="flex items-center space-x-2">
-              <Reply className="w-4 h-4" />
-              <span>Reply</span>
-            </Button>
-            <Button variant="outline" className="flex items-center space-x-2">
-              <Forward className="w-4 h-4" />
-              <span>Forward</span>
-            </Button> */}
-            <Button className="flex items-center space-x-2">
+            <Button
+              className="flex items-center space-x-2"
+              onClick={handleProcess}
+              disabled={processing}
+            >
               <Star className="w-4 h-4" />
-              <span>Prcoess</span>
+              <span>
+                {processing ? 'Processing...' : 'Process'}
+              </span>
             </Button>
             {/* Added icons after Quick Reply */}
             <div className="flex items-center space-x-2 ml-4">
@@ -170,6 +205,12 @@ const EmailDetails = ({ selectedEmail, tags = [] }) => {
               </Button>
             </div>
           </div>
+          {processError && (
+            <div className="mt-4 text-red-600 text-sm">{processError}</div>
+          )}
+          {processSuccess && (
+            <div className="mt-4 text-green-600 text-sm">Processed successfully!</div>
+          )}
         </div>
     </div>
   )

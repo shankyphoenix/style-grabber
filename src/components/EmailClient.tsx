@@ -20,7 +20,7 @@ const EmailClient = () => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
 
   // Fetch companies from API
-  const [allOptions, setAllOptions] = useState<{ company_id: string; company_name: string }[]>([]);
+  const [allOptions, setAllOptions] = useState<{ company_id: string; company_name: string; url: string }[]>([]);
   useEffect(() => {
     // Use import.meta.env for Vite or process.env for Create React App
     const apiKey =
@@ -47,6 +47,7 @@ const EmailClient = () => {
   }, []);
 
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [selectedCompanyUrl, setSelectedCompanyUrl] = useState<string | null>(null);
 
   // Update suggestions as user types
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,7 +70,8 @@ const EmailClient = () => {
     const selected = allOptions.find(opt => opt.name === option);
     setSelectedOption(option);
     setSelectedCompanyId(selected ? selected.company_id : null);
-    console.log(selected);
+    setSelectedCompanyUrl(selected ? selected.url : null);
+    console.log(selected.url);
     setSelectedFolder('Inbox'); // Automatically select Inbox
     setSearchValue('');
     setSuggestions([]);
@@ -119,6 +121,7 @@ const EmailClient = () => {
                     onClick={() => {
                       setSelectedOption(null);
                       setSelectedCompanyId(null); // Reset company selection for default view
+                      setSelectedCompanyUrl(null); // Reset company selection for default view
                     }}
                   >
                     &times;
@@ -170,6 +173,7 @@ const EmailClient = () => {
       <EmailList
         selectedFolder={selectedFolder}
         selectedCompanyId={selectedCompanyId}
+        selectedCompanyUrl={selectedCompanyUrl}
       />
 
     </div>

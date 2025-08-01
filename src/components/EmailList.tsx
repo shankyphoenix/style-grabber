@@ -21,9 +21,10 @@ interface Email {
 interface EmailListProps {
   selectedFolder: string;
   selectedCompanyId: string | null;
+  selectedCompanyUrl: string | null;
 }
 
-const EmailList: React.FC<EmailListProps> = ({ selectedFolder, selectedCompanyId }) => {
+const EmailList: React.FC<EmailListProps> = ({ selectedFolder, selectedCompanyUrl, selectedCompanyId }) => {
   const [emails, setEmails] = useState<Email[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -39,7 +40,7 @@ const EmailList: React.FC<EmailListProps> = ({ selectedFolder, selectedCompanyId
     setLoading(true);
     setEmails([]);
     setSelectedEmail(null);
-
+    console.log(selectedCompanyUrl);
     if (selectedFolder === 'Inbox' && selectedCompanyId) {
       // Replace with your actual endpoint
 
@@ -245,7 +246,7 @@ const EmailList: React.FC<EmailListProps> = ({ selectedFolder, selectedCompanyId
               Loading email details...
           </div>
       ) : (
-          <EmailDetails selectedEmail={selectedEmail} tags={selectedEmail ? emailTags[selectedEmail.id] || [] : []} />
+          <EmailDetails selectedEmail={selectedEmail} selectedCompanyUrl={selectedCompanyUrl} tags={selectedEmail ? emailTags[selectedEmail.id] || [] : []} />
       )}
       </>
   )
