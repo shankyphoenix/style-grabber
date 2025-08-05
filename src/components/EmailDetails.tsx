@@ -9,6 +9,7 @@ const EmailDetails = ({ selectedEmail, selectedCompanyUrl, tags = [] }) => {
   const [processError, setProcessError] = useState<string | null>(null);
   const [processSuccess, setProcessSuccess] = useState(false);
   const [dynamicTags, setDynamicTags] = useState<string[]>(tags);
+  const [sentiment, setSentiment] = useState<string | null>(null);
 
   const handleProcess = async () => {
     if (!selectedCompanyUrl) {
@@ -37,10 +38,14 @@ const EmailDetails = ({ selectedEmail, selectedCompanyUrl, tags = [] }) => {
         throw new Error('API request failed');
       }
       const data = await response.json();
-      // Read results[0].analysis.category
+      // Read results[0].analysis.category and sentiment
       const category = data?.results?.[0]?.analysis?.category;
+      const sentimentValue = data?.results?.[0]?.analysis?.sentiment;
       if (category) {
         setDynamicTags(prev => [...prev, category]);
+      }
+      if (sentimentValue) {
+        setSentiment(sentimentValue);
       }
       setProcessSuccess(true);
     } catch (err: any) {
@@ -57,10 +62,14 @@ const EmailDetails = ({ selectedEmail, selectedCompanyUrl, tags = [] }) => {
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-xl font-semibold text-gray-900">{selectedEmail?.subject}</h1>
           <div className="flex items-center space-x-2">
-            <Badge className="bg-email-sidebar text-white px-3 py-1">
-              INBOX
-            </Badge>
-            {selectedEmail?.isUnread && (
+            
+            {/* Show sentiment here */}
+              {sentiment && (
+                <Badge className="bg-email-sidebar text-white px-3 py-1">
+                  {sentiment}
+                </Badge>
+              )}
+            {/* {selectedEmail?.isUnread && (
               <Badge variant="outline" className="px-3 py-1">
                 Important
               </Badge>
@@ -69,7 +78,7 @@ const EmailDetails = ({ selectedEmail, selectedCompanyUrl, tags = [] }) => {
               <Badge className="bg-primary text-primary-foreground px-3 py-1">
                 {selectedEmail.category}
               </Badge>
-            )}
+            )} */}
             {/* Show categoryTag if present */}
             {/* {dynamicTags && dynamicTags.map(tag => (
               <Badge key={tag} className="bg-green-600 text-white px-3 py-1">

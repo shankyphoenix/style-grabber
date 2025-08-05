@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import EmailList from './EmailList';
 import { Inbox, Users, StickyNote } from 'lucide-react';
@@ -77,6 +77,14 @@ const EmailClient = () => {
     setSuggestions([]);
   };
 
+  const emailListRef = useRef<any>(null);
+  const [emailCount, setEmailCount] = useState(0);
+
+  // Callback to update email count from child
+  const handleEmailCountChange = (count: number) => {
+    setEmailCount(count);
+  };
+
   return (
     <div className="h-screen flex bg-background">
       {/* Sidebar */}
@@ -150,7 +158,7 @@ const EmailClient = () => {
                 </div>
                 {folder.name === 'Inbox' ? (
                   <Badge className="bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full">
-                    {0}
+                    {emailCount}
                   </Badge>
                 ) : (
                   <></>
@@ -171,9 +179,11 @@ const EmailClient = () => {
 
       {/* Email List */}
       <EmailList
+        ref={emailListRef}
         selectedFolder={selectedFolder}
         selectedCompanyId={selectedCompanyId}
         selectedCompanyUrl={selectedCompanyUrl}
+        onEmailCountChange={handleEmailCountChange}
       />
 
     </div>
