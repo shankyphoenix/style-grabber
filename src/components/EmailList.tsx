@@ -133,15 +133,15 @@ const EmailList = forwardRef<unknown, EmailListProps>(
 
     // Expose emails count to parent via ref
     useImperativeHandle(ref, () => ({
-      getEmailCount: () => filteredEmails.length
-    }), [filteredEmails]);
+      getEmailCount: () => emails.length
+    }), [emails]);
 
     useEffect(() => {
       // After emails are set, update count in parent
       if (onEmailCountChange) {
-        onEmailCountChange(filteredEmails.length);
+        onEmailCountChange(emails.length);
       }
-    }, [filteredEmails, onEmailCountChange]);
+    }, [emails, onEmailCountChange]);
 
     return (
         <>
