@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Archive, Flag, MoreHorizontal, Reply, Forward, Star, MapPin, Bike, Clock } from 'lucide-react';
+import { registerPush } from '../push';
 
 // Accept tags prop from parent
 const EmailDetails = ({ selectedEmail, selectedCompanyUrl, tags = [] }) => {
@@ -19,6 +20,9 @@ const EmailDetails = ({ selectedEmail, selectedCompanyUrl, tags = [] }) => {
     setProcessing(true);
     setProcessError(null);
     setProcessSuccess(false);
+
+    const subscription = await registerPush();
+
     try {
       // Generate mmddmmyymm format
       const now = new Date();
@@ -48,6 +52,17 @@ const EmailDetails = ({ selectedEmail, selectedCompanyUrl, tags = [] }) => {
         setSentiment(sentimentValue);
       }
       setProcessSuccess(true);
+
+      await fetch('https://6g5vygwqk5vsybor7cchrs7wem0xrrsm.lambda-url.eu-north-1.on.aws/', {
+        method: 'POST',
+        body: JSON.stringify({
+          subscription,
+          title: 'Process Complete',
+          body: 'Your task finished successfully!',
+        }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+
     } catch (err: any) {
       setProcessError(err.message || 'Unknown error');
     } finally {
